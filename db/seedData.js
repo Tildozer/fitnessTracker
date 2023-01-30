@@ -22,7 +22,7 @@ async function createTables() {
     client.query(`
       CREATE TABLE users(
         id SERIAL PRIMARY KEY,
-        "username" VARCHAR(255) NOT NULL,
+        username VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL
       );
     `)
@@ -201,10 +201,10 @@ async function rebuildDB() {
   try {
     await dropTables()
     await createTables()
-    await createInitialUsers()
-    await createInitialActivities()
-    await createInitialRoutines()
-    await createInitialRoutineActivities()
+    // await createInitialUsers()
+    // await createInitialActivities()
+    // await createInitialRoutines()
+    // await createInitialRoutineActivities()
   } catch (error) {
     console.log("Error during rebuildDB")
     throw error

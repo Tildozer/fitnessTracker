@@ -6,7 +6,7 @@ const client = require("./client");
 async function createUser({ username, password }) {
   try {
     const SQL = `
-    INSERT INTO "users"(username, password)
+    INSERT INTO users(username, password)
     VALUES ($1, $2)
     RETURNING id, username
     `
@@ -23,14 +23,41 @@ async function createUser({ username, password }) {
 
 async function getUser({ username, password }) {
 
+try {
+  const SQL = `
+  SELECT id, username FROM users 
+  WHERE password = $1
+  `
+const { rows: [user] } = await client.query(SQL, [password])
+console.log(user);
+if (!user) {
+  throw new Error('Could not get user');
+}
+  
+  return user;
+} catch (error) {
+  console.error(error);
+}
+
+
 }
 
 async function getUserById(userId) {
 
+  try {
+  
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function getUserByUsername(userName) {
-
+ 
+  try {
+  
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 module.exports = {
