@@ -5,7 +5,7 @@ const client = require("./client")
 async function dropTables() {
   console.log("Dropping All Tables...")
   try {
-    client.query(`
+    await client.query(`
       DROP TABLE IF EXISTS users
     `)  
   } catch (error) {
@@ -19,10 +19,10 @@ async function createTables() {
   console.log("Starting to build tables...")
   // create all tables, in the correct order
   try {
-    client.query(`
+    await client.query(`
       CREATE TABLE users(
         id SERIAL PRIMARY KEY,
-        username VARCHAR(255) NOT NULL,
+        username VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL
       );
     `)
