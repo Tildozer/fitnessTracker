@@ -9,15 +9,13 @@ const saltRounds = 10;
 async function createUser({ username, password }) {
   try {
     const hashedPassword = await bcrypt.hash(password, saltRounds)  
-    console.log(hashedPassword);
-
-    const SQL = `
-    INSERT INTO users(username, password)
-    VALUES ($1, $2)
-    RETURNING id, username
-    `
-    const { rows: [user] } = await client.query(SQL, [username, hashedPassword]) 
-    // console.log('user', user)
+  
+    const { rows: [user] } = await client.query(`
+      INSERT INTO users(username, password)
+      VALUES ($1, $2)
+      RETURNING id, username
+    `, [username, hashedPassword]) 
+     console.log('user', user)
     return user;
 
   } catch (error) {
@@ -26,13 +24,13 @@ async function createUser({ username, password }) {
 }
 
 async function getUser({ username, password }) {
-try {
-  const SQL = `
-  SELECT * 
-  FROM users 
-  WHERE username =$1
-  `
-const { rows: [user] } = await client.query(SQL, [username])
+try { 
+
+    const { rows: [user] } = await client.query(`
+      SELECT * 
+      FROM users 
+      WHERE username =$1
+      ` ,[username])
 // console.log(user);
 if (!user) {
   throw new Error('Could not get user');
