@@ -10,7 +10,7 @@ async function createActivity({ name, description }) {
     const { rows : [activity]} = await client.query(`
     INSERT INTO activities (name, description)
     VALUES ($1, $2)
-    RETURNING name, description
+    RETURNING *
     `, [name, description]);
 
 
@@ -22,12 +22,51 @@ async function createActivity({ name, description }) {
 
 async function getAllActivities() {
   // select and return an array of all activities
+  try {
+    const {rows : activities } = await client.query(`
+      SELECT *
+      FROM activities
+    `)
+
+    return activities;
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function getActivityById(id) {
+  console.log('id search',id)
+try {
+
+  const {rows : activities } = await client.query(`
+    SELECT * 
+    FROM activities
+    WHERE id=$1 
+  `, [id])
+
+  return activities[0];
+} catch (error) {
+  console.error(error)
+}
 
 }
 
-async function getActivityById(id) {}
+async function getActivityByName(name) {
 
-async function getActivityByName(name) {}
+  try {
+
+    const {rows : [activity] } = await client.query(`
+      SELECT * 
+      FROM activities
+      WHERE name=$1 
+    `, [name])
+
+    return activity;
+  } catch (error) {
+    console.error(error)
+  }
+  
+}
 
 async function attachActivitiesToRoutines(routines) {
   // select and return an array of all activities
