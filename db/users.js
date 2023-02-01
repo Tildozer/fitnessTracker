@@ -15,7 +15,7 @@ async function createUser({ username, password }) {
       VALUES ($1, $2)
       RETURNING id, username
     `, [username, hashedPassword]) 
-     console.log('user', user)
+  
     return user;
 
   } catch (error) {
@@ -52,12 +52,12 @@ if (!user) {
 
 async function getUserById(userId) {
   try {
-    const SQL = `
+
+    const { rows: [user]} = await client.query(`
     SELECT username, id
     FROM users
     WHERE id = $1
-    `
-    const { rows: [user]} = await client.query(SQL, [userId])
+    `, [userId])
 
     return user;
   } catch (error) {
@@ -67,12 +67,12 @@ async function getUserById(userId) {
 
 async function getUserByUsername(userName) {
   try {
-    const SQL = `
+
+    const { rows: [user]} = await client.query(`
     SELECT *
     FROM users
     WHERE username = $1
-    `
-    const { rows: [user]} = await client.query(SQL, [userName])
+    `, [userName])
 
     return user;
   } catch (error) {
