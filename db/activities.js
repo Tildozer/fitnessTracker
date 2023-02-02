@@ -65,7 +65,7 @@ async function getActivityByName(name) {
   } catch (error) {
     console.error(error)
   }
-  
+   
 }
 
 async function attachActivitiesToRoutines(routines) {
