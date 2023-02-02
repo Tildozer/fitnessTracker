@@ -6,8 +6,11 @@ async function dropTables() {
   console.log("Dropping All Tables...")
   try {
     await client.query(`
+      DROP TABLE IF EXISTS routine_activities;
+      DROP TABLE IF EXISTS routines;
       DROP TABLE IF EXISTS users;
-      DROP TABLE IF EXISTS activities;
+      DROP TABLE IF EXISTS activities; 
+      
     `)  
   } catch (error) {
     console.error(error)
@@ -27,10 +30,27 @@ async function createTables() {
         password VARCHAR(255) NOT NULL
       );
 
-        CREATE TABLE activities(id SERIAL PRIMARY KEY,
+        CREATE TABLE activities(
+        id SERIAL PRIMARY KEY,
         name VARCHAR(255) UNIQUE NOT NULL,
         description TEXT NOT NULL
       );
+
+        CREATE TABLE routines(
+          id SERIAL PRIMARY KEY,
+          "creatorId" INTEGER REFERENCES users(id),
+          "isPublic" BOOLEAN DEFAULT false,
+          name VARCHAR(255) UNIQUE NOT NULL,
+          goal TEXT NOT NULL
+        );
+
+        CREATE TABLE routine_activities(
+          id SERIAL PRIMARY KEY,
+          "routineId"	INTEGER	REFERENCES routines (id),
+          "activityId"	INTEGER	REFERENCES activities (id),
+          duration	INTEGER,
+          count	INTEGER
+        );
     `)
 
 
@@ -211,8 +231,8 @@ async function rebuildDB() {
     await createTables()
     await createInitialUsers()
     await createInitialActivities()
-    // await createInitialRoutines()
-    // await createInitialRoutineActivities()
+    await createInitialRoutines()
+    await createInitialRoutineActivities()
   } catch (error) {
     console.log("Error during rebuildDB")
     throw error
