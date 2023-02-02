@@ -35,7 +35,7 @@ async function getAllActivities() {
 }
 
 async function getActivityById(id) {
-  console.log('id search',id)
+
 try {
 
   const {rows : activities } = await client.query(`
@@ -76,6 +76,23 @@ async function updateActivity({ id, ...fields }) {
   // don't try to update the id
   // do update the name and description
   // return the updated activity
+  const setFields = Object.keys(fields).map(
+    (key, index) => `"${ key }"=$${ index + 1 }`
+    ).join(', ');
+    
+    
+    try {
+      const { rows: [activity] } = await client.query(`
+      UPDATE activities
+      SET ${setFields}
+      WHERE id = ${id}
+      RETURNING *
+      ` , Object.values(fields));
+    return activity;
+  } catch (error) {
+  console.error(error)    
+  }
+
 }
 
 module.exports = {
