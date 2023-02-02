@@ -7,8 +7,7 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
     VALUES ($1, $2, $3, $4)
     RETURNING *
     `, [creatorId, isPublic, name, goal])
-    
-    console.log(routine)
+
     return routine;
   } catch (error) {
     console.error(error);
@@ -33,7 +32,15 @@ async function getRoutinesWithoutActivities() {
 
 async function getAllRoutines() {
   try {
-    
+    const {rows : routines} = await client.query(`
+    SELECT DISTINCT routines.*, duration, routine_activities.count, activities.id AS "activityId", activities.name, description, username AS "creatorName"
+    FROM routines 
+    JOIN routine_activities ON routines.id=routine_activities."routineId"
+    JOIN activities ON routine_activities."activityId"=activities.id
+    JOIN users ON users.id=routines."creatorId"
+    `)
+    console.log(routines)
+    return routines;
   } catch (error) {
     console.error(error);
   }
