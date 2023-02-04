@@ -161,7 +161,7 @@ async function destroyRoutine(id) {
     WHERE id = $1
     `, [id]);
 
-    
+    return
   } catch (error) {
     console.error(error);
   }

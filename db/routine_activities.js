@@ -59,6 +59,7 @@ async function updateRoutineActivity({ id, ...fields }) {
       WHERE id = ${id}
       RETURNING *
       `, Object.values(fields))
+
      return routineActivity;
   } catch (error) {
   console.error(error);
@@ -72,7 +73,6 @@ async function destroyRoutineActivity(id) {
     WHERE "routineId" = $1
     RETURNING *
     `, [id])
-console.log(routineActivity)
 
     return routineActivity;
   } catch (error) { 
@@ -82,7 +82,14 @@ console.log(routineActivity)
 
 async function canEditRoutineActivity(routineActivityId, userId) {
   try {
-    
+    const { rows : [routine] } = await client.query(`
+      SELECT  "creatorId", routs.id AS "routId", routine_activities.id
+      FROM routines routs
+      JOIN routine_activities ON routs.id = routine_activities."routineId"
+      WHERE  routine_activities.id = $1
+    `, [routineActivityId])
+
+    return routine.creatorId === userId
   } catch (error) {
    console.error(error) 
   }
