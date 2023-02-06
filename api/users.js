@@ -8,6 +8,8 @@ const {
   UserTakenError,
   PasswordTooShortError,
 } = require("../errors.js");
+const id = require("faker/lib/locales/id_ID");
+const { token } = require("morgan");
 
 // POST /api/users/register
 router.post("/register", async (req, res, next) => {
@@ -32,7 +34,7 @@ router.post("/register", async (req, res, next) => {
 
     const { id } = newUser;
     const token = jwt.sign(
-      { id: id, username, password },
+      { id: id, username },
       process.env.JWT_SECRET
     );
 
@@ -51,7 +53,45 @@ router.post("/register", async (req, res, next) => {
 
 // POST /api/users/login
 router.post("/login", async(req, res, next) => {
+  const {username, password} = req.body;
+
+
+  
+  if (!username || !password) {
+    next({
+      name: "Missing Credentials Error",
+      message: "User not found"
+    });
+  }
+
+  try {
+    const user = await getUser({username, password});
     
+    console.log(user)
+    if (username == username) {
+  
+      const token = jwt.sign(
+        { id: user.id, username: user.username },
+        process.env.JWT_SECRET
+      );
+
+      res.send({ 
+        message: "you're logged in!",
+        token: token,
+        user: user,
+    })
+    } else {
+
+      next ({
+        name: "Incorrect Credetials Error",
+        message: "Username or password is incorrect"
+      })
+    }
+
+  } catch (error) {
+    next(error);
+  }
+
 })
 
 // GET /api/users/me
