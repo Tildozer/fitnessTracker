@@ -1,9 +1,10 @@
 /* eslint-disable no-useless-catch */
 const express = require("express");
-const router = express.Router();
-const { createUser, getUser } = require("../db");
+const UserRouter = express.Router();
+const { createUser, getUser, getUserByUsername, } = require("../db");
 const jwt = require("jsonwebtoken");
 const {
+  UnauthorizedError,
   UserDoesNotExistError,
   UserTakenError,
   PasswordTooShortError,
@@ -12,7 +13,7 @@ const id = require("faker/lib/locales/id_ID");
 const { token } = require("morgan");
 
 // POST /api/users/register
-router.post("/register", async (req, res, next) => {
+UserRouter.post("/register", async (req, res, next) => {
   const { username, password } = req.body;
   try {
     if (password.length <= 7) {
@@ -52,7 +53,7 @@ router.post("/register", async (req, res, next) => {
 });
 
 // POST /api/users/login
-router.post("/login", async(req, res, next) => {
+UserRouter.post("/login", async(req, res, next) => {
   const {username, password} = req.body;
 
 
@@ -96,6 +97,44 @@ router.post("/login", async(req, res, next) => {
 
 // GET /api/users/me
 
+UserRouter.get('/me', async (req, res, next) => {
+
+  const token = req.header('Authorization')
+  
+  
+try {
+  
+
+  if (!token) {
+    res.status(401).send({
+      message: UnauthorizedError(),
+      error: 'No token found',
+      name: 'name'
+    })
+  }
+
+  const headerToken = req.header('Authorization').slice(7);
+  const userInfo = jwt.verify(headerToken, process.env.JWT_SECRET)
+  const user = await getUserByUsername(userInfo.username)
+
+  if (user) {
+    console.log('beans')
+    res.send({
+      id: user.id, 
+      username: user.username
+    });
+  }
+  else {
+      console.log('BEANS')
+      res.send('User unavailable');
+    
+  }
+} catch (error) {
+  next(error);
+}
+
+})
+
 // GET /api/users/:username/routines
 
-module.exports = router;
+module.exports = UserRouter;
