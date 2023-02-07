@@ -1,16 +1,23 @@
 /* eslint-disable no-useless-catch */
 const express = require("express");
 const UserRouter = express.Router();
-const { createUser, getUser, getUserByUsername, } = require("../db");
+const { 
+  createUser,
+  getUser, 
+  getUserByUsername, 
+  getAllRoutinesByUser, 
+  getPublicRoutinesByUser 
+} = require("../db");
 const jwt = require("jsonwebtoken");
+
 const {
   UnauthorizedError,
-  UserDoesNotExistError,
+  // UserDoesNotExistError,
   UserTakenError,
   PasswordTooShortError,
 } = require("../errors.js");
-const id = require("faker/lib/locales/id_ID");
-const { token } = require("morgan");
+// const id = require("faker/lib/locales/id_ID");
+// const { token } = require("morgan");
 
 // POST /api/users/register
 UserRouter.post("/register", async (req, res, next) => {
@@ -68,7 +75,6 @@ UserRouter.post("/login", async(req, res, next) => {
   try {
     const user = await getUser({username, password});
     
-    console.log(user)
     if (username == username) {
   
       const token = jwt.sign(
@@ -118,14 +124,12 @@ try {
   const user = await getUserByUsername(userInfo.username)
 
   if (user) {
-    console.log('beans')
     res.send({
       id: user.id, 
       username: user.username
     });
   }
   else {
-      console.log('BEANS')
       res.send('User unavailable');
     
   }
@@ -136,5 +140,26 @@ try {
 })
 
 // GET /api/users/:username/routines
+UserRouter.get('/:username/routines', async (req, res, next) => {
+  const token = req.header("Authorization");
+  const headerToken = token.slice(7);
+  const { username } = req.params;
+  
+  try {
+    const userInfo = jwt.verify(headerToken, process.env.JWT_SECRET);
+    if(username === userInfo.username){
+      const  routines = await getAllRoutinesByUser({username});
+
+      res.send(routines);
+    }
+    
+    const publicRoutines = await getPublicRoutinesByUser({username});
+
+    res.send(publicRoutines);
+} catch (error) {
+  next(error)
+}
+  
+})
 
 module.exports = UserRouter;
