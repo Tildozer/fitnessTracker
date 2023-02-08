@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllActivities, getPublicRoutinesByActivity } = require('../db');
+const { getAllActivities, getPublicRoutinesByActivity, createActivity } = require('../db');
 const router = express.Router();
 
 // GET /api/activities/:activityId/routines
@@ -10,8 +10,8 @@ const { activityId } = req.params;
 try {
     const routinesByActivity = await getPublicRoutinesByActivity({id: activityId, });
 
-if (!routinesByActivity) {
-    next({
+if (!routinesByActivity.length) {
+    res.status(400).send({
         error: 'Failed to get activities',
         message: `Activity ${activityId} not found`,
         name: 'Activity Not Found'
@@ -43,8 +43,41 @@ router.get ('/', async (req, res, next) => {
 
 // POST /api/activities
 
-router.post("/activities", async (req, res, next) => {
-    const { activities } = req.body;
+router.post("/", async (req, res, next) => {
+    const { name, description } = req.body;
+
+console.log(req.body)
+try {
+    
+if (!name || !description ) {
+res.status(418).send({
+    error: "teapot",
+    message: "name or description was not found",
+    name: "more teapots" 
+})
+}
+else {
+    const activity = await  createActivity(req.body)
+    
+
+    if (!activity) {
+        res.status(418).send({
+            error: "teapot",
+            message: "An activity with name Push Ups already exists",
+            name: "more teapots" 
+        })
+    }
+
+    res.send(activity)
+}
+
+
+
+} catch (error) {
+    next(error)
+}
+
+
 })
 
 // PATCH /api/activities/:activityId

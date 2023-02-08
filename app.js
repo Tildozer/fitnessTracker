@@ -12,7 +12,7 @@ app.use(morgan("dev"))
 app.use(cors());
 
 app.use((req, res, next) => {
-    console.log(chalk.blue.underline("<____Body Logger START____>"));
+    console.log(chalk.red.underline("<____Body Logger START____>"));
     console.log(chalk.magenta(JSON.stringify(req.body)));
     console.log(chalk.blue.underline("<____Body Logger END_____>"));
   
