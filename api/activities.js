@@ -10,7 +10,7 @@ const { activityId } = req.params;
 try {
     const routinesByActivity = await getPublicRoutinesByActivity({id: activityId, });
 
-if (!routinesByActivity.length) {
+if (!routinesByActivity) {
     next({
         error: 'Failed to get activities',
         message: `Activity ${activityId} not found`,
@@ -42,6 +42,10 @@ router.get ('/', async (req, res, next) => {
 })
 
 // POST /api/activities
+
+router.post("/activities", async (req, res, next) => {
+    const { activities } = req.body;
+})
 
 // PATCH /api/activities/:activityId
 
