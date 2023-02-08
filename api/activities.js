@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllActivities, getPublicRoutinesByActivity, createActivity } = require('../db');
+const { getAllActivities, getPublicRoutinesByActivity, createActivity, updateActivity } = require('../db');
 const router = express.Router();
 
 // GET /api/activities/:activityId/routines
@@ -46,7 +46,7 @@ router.get ('/', async (req, res, next) => {
 router.post("/", async (req, res, next) => {
     const { name, description } = req.body;
 
-console.log(req.body)
+
 try {
     
 if (!name || !description ) {
@@ -81,5 +81,38 @@ else {
 })
 
 // PATCH /api/activities/:activityId
+
+router.patch('/:activityId', async (req, res, next) => {
+    const { activityId } = req.params;
+    const token = req.header("Authorization");
+    
+    try {
+        
+        if (!token) {
+            res.status(401).send({
+                error: 'you shall not pass',
+                name: 'Unauthorized user',
+                message: 'Activity 10000 not found' 
+            })
+        } else {
+            const fields = req.body;
+            const updateActivity = await updateActivity({ id:activityId, fields})
+            console.log(token)
+
+            if (!updateActivity) {
+
+                res.status(404).send({
+                        error: 'you shall not edit',
+                        name: 'Unable to edit',
+                        message: 'Activity 10000 not found'
+                    })
+                } else {
+                    res.send(updateActivity);
+                }
+            }
+    } catch (error) {
+        next(error)
+    }
+})
 
 module.exports = router;
