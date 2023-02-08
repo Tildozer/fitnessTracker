@@ -4,7 +4,7 @@ const router = express.Router();
 
 // GET /api/activities/:activityId/routines
 
-router.get ('/:activityId/routines', async (res, req, next) => {
+router.get ('/:activityId/routines', async (req, res, next) => {
 const { activityId } = req.params;
 
 try {
@@ -12,7 +12,7 @@ try {
 
 if (!routinesByActivity.length) {
     next({
-        error: '',
+        error: 'Failed to get activities',
         message: `Activity ${activityId} not found`,
         name: 'Activity Not Found'
     });
