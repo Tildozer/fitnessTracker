@@ -3,7 +3,7 @@ const { use } = require('../app');
 const { canEditRoutineActivity, updateActivity, updateRoutineActivity, getRoutineActivityById, getRoutineById, destroyRoutineActivity } = require('../db');
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { UnauthorizedUpdateError } = require('../errors');
+const { UnauthorizedUpdateError, UnauthorizedDeleteError } = require('../errors');
 
 // PATCH /api/routine_activities/:routineActivityId
 
@@ -68,12 +68,16 @@ router.delete('/:routineActivityId', async (req, res, next) => {
 
             const { routineActivityId } = req.params;
 
-            console.log(req.body)
-            const { id: routineId, name: routineActivityName } = await getRoutineActivityById(routineActivityId)
-            const { creatorId } = await getRoutineById(id);
-
-            const deletedRoutineActivity = destro(routineActivityId)
-
+            const {routineId} = await getRoutineActivityById(routineActivityId);
+            const { creatorId, name } = await getRoutineById(routineId);
+            if(creatorId !== userId){
+              res.status(403).send({
+                error: 'Unauthorized beans',
+                message: UnauthorizedDeleteError(username, name),
+                name: 'beans'
+              })
+            }
+            const deletedRoutineActivity = await destroyRoutineActivity(routineActivityId)
             res.send(deletedRoutineActivity)
     } catch (error) {
         next(error)
