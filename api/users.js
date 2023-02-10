@@ -24,7 +24,7 @@ UserRouter.post("/register", async (req, res, next) => {
   const { username, password } = req.body;
   try {
     if (password.length <= 7) {
-      res.send({
+      res.status(400).send({
         error: "Short Password",
         message: PasswordTooShortError(),
         name: username,
@@ -33,7 +33,7 @@ UserRouter.post("/register", async (req, res, next) => {
     const newUser = await createUser(req.body);
 
     if (!newUser) {
-      res.send({
+      res.status(401).send({
         error: "Taken Username",
         message: UserTakenError(username),
         name: username,

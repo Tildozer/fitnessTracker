@@ -31,7 +31,7 @@ router.post("/", async (req, res, next) => {
   const token = req.header("Authorization");
 
   if (!token) {
-    res.send({
+    res.status(401).send({
       error: "No token found",
       message: UnauthorizedError(),
       name: "tokenless error",
@@ -56,7 +56,7 @@ router.patch("/:routineId", async (req, res, next) => {
   const token = req.header("Authorization");
 
   if (!token) {
-    res.send({
+    res.status(401).send({
       error: "No token found",
       message: UnauthorizedError(),
       name: "tokenless error",
@@ -94,7 +94,7 @@ router.delete("/:routineId", async (req, res, next) => {
   const token = req.header("Authorization");
 
   if (!token) {
-    res.send({
+    res.status(401).send({
       error: "No token found",
       message: UnauthorizedError(),
       name: "tokenless error",

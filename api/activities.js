@@ -86,7 +86,7 @@ router.patch("/:id", async (req, res, next) => {
       const activityName = await getActivityByName(req.body.name);
 
       if (activityName) {
-        res.send({
+        res.status(401).send({
           error: "you shall not edit",
           name: "Unable to edit",
           message: ActivityExistsError(req.body.name),
