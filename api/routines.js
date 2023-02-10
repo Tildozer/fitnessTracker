@@ -8,13 +8,12 @@ const {
   addActivityToRoutine,
 } = require("../db");
 const {
-  UnauthorizedError,
   UnauthorizedUpdateError,
   UnauthorizedDeleteError,
   DuplicateRoutineActivityError,
 } = require("../errors");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
+const { tokenAuth, sliceToken } = require("./utils");
 
 // GET /api/routines
 router.get("/", async (req, res, next) => {
@@ -27,20 +26,9 @@ router.get("/", async (req, res, next) => {
   }
 });
 // POST /api/routines
-router.post("/", async (req, res, next) => {
-  const token = req.header("Authorization");
-
-  if (!token) {
-    res.status(401).send({
-      error: "No token found",
-      message: UnauthorizedError(),
-      name: "tokenless error",
-    });
-  }
-
+router.post("/", tokenAuth, async (req, res, next) => {
   try {
-    const headerToken = token.slice(7);
-    const { id: creatorId } = jwt.verify(headerToken, process.env.JWT_SECRET);
+    const { id: creatorId } = sliceToken(req);
     const { isPublic, name, goal } = req.body;
 
     const newRoutine = await createRoutine({ creatorId, isPublic, name, goal });
@@ -52,34 +40,20 @@ router.post("/", async (req, res, next) => {
 });
 
 // PATCH /api/routines/:routineId
-router.patch("/:routineId", async (req, res, next) => {
-  const token = req.header("Authorization");
-
-  if (!token) {
-    res.status(401).send({
-      error: "No token found",
-      message: UnauthorizedError(),
-      name: "tokenless error",
-    });
-  }
-
+router.patch("/:routineId", tokenAuth, async (req, res, next) => {
   try {
-    const headerToken = token.slice(7);
-    const { id: userId, username } = jwt.verify(
-      headerToken,
-      process.env.JWT_SECRET
-    );
+    const { id: userId, username } = sliceToken(req);
     const { routineId } = req.params;
     const { creatorId, name: routineName } = await getRoutineById(routineId);
 
     if (creatorId !== userId) {
-      res.status(403).send({
+      next({
         error: "Unauthorized User",
         message: UnauthorizedUpdateError(username, routineName),
         name: "Not today, bucko",
+        status: 403,
       });
     }
-
     const { isPublic, name, goal } = req.body;
     const newRoutine = await createRoutine({ creatorId, isPublic, name, goal });
 
@@ -90,35 +64,21 @@ router.patch("/:routineId", async (req, res, next) => {
 });
 
 // DELETE /api/routines/:routineId
-router.delete("/:routineId", async (req, res, next) => {
-  const token = req.header("Authorization");
-
-  if (!token) {
-    res.status(401).send({
-      error: "No token found",
-      message: UnauthorizedError(),
-      name: "tokenless error",
-    });
-  }
+router.delete("/:routineId", tokenAuth, async (req, res, next) => {
   try {
-    const headerToken = token.slice(7);
-    const { id: userId, username } = jwt.verify(
-      headerToken,
-      process.env.JWT_SECRET
-    );
+    const { id: userId, username } = sliceToken(req);
     const { routineId } = req.params;
     const { creatorId, name: routineName } = await getRoutineById(routineId);
 
     if (creatorId !== userId) {
-      res.status(403).send({
+      next({
         error: "Unauthorized User",
         message: UnauthorizedDeleteError(username, routineName),
         name: "Not today, bucko",
+        status: 403,
       });
     }
     const deletedRoutine = await destroyRoutine(routineId);
-
-    console.log(deletedRoutine);
 
     res.send(deletedRoutine);
   } catch (error) {
@@ -135,10 +95,11 @@ router.post("/:routineId/activities", async (req, res, next) => {
     });
     routineActivities.forEach(({ routineId: idCheck, activityId }) => {
       if (idCheck !== routineId) {
-        res.send({
-          error: "No token found",
+        next({
+          error: "Cannot have the same routine more than once.",
           message: DuplicateRoutineActivityError(routineId, activityId),
-          name: "tokenless error",
+          name: "Dupicate Routine error",
+          status: 401,
         });
       }
     });

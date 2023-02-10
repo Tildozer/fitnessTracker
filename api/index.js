@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+
 // GET /api/health
 router.get('/health', async (req, res) => {
   res.send({ success: true , message: "The server is up and healthy"})
@@ -22,5 +23,13 @@ router.use('/routines', routinesRouter);
 // ROUTER: /api/routine_activities
 const routineActivitiesRouter = require('./routineActivities');
 router.use('/routine_activities', routineActivitiesRouter);
+
+
+// eslint-disable-next-line no-unused-vars
+router.use((err, req, res, next) => {
+  res.status(err.status || 500)
+  delete err.status
+  res.send(err)
+})
 
 module.exports = router;

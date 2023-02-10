@@ -25,6 +25,9 @@ app.use((req, res, next) => {
   
   app.use("/api", apiRouter);
 
+  // eslint-disable-next-line no-unused-vars
+
+
   app.use((req, res) => {
     res.status(404).send(
       {success: false , message: "Request failed with status 404"} 

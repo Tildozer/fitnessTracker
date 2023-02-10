@@ -9,51 +9,50 @@ const {
   getPublicRoutinesByUser 
 } = require("../db");
 const jwt = require("jsonwebtoken");
-
 const {
-  UnauthorizedError,
-  // UserDoesNotExistError,
   UserTakenError,
   PasswordTooShortError,
 } = require("../errors.js");
-// const id = require("faker/lib/locales/id_ID");
-// const { token } = require("morgan");
+const { tokenAuth, sliceToken } = require("./utils");
 
 // POST /api/users/register
 UserRouter.post("/register", async (req, res, next) => {
   const { username, password } = req.body;
   try {
     if (password.length <= 7) {
-      res.status(400).send({
+      next({
         error: "Short Password",
         message: PasswordTooShortError(),
         name: username,
+        status: 400 
       });
     }
     const newUser = await createUser(req.body);
 
     if (!newUser) {
-      res.status(401).send({
+      next({
         error: "Taken Username",
         message: UserTakenError(username),
         name: username,
+        status: 401,
+      });
+    } else {
+      const { id } = newUser;
+      const token = jwt.sign(
+        { id: id, username },
+        process.env.JWT_SECRET
+      );
+  
+      res.send({
+        message: "You have successfully registered!",
+        token: token,
+        user: {
+          id: id,
+          username: username,
+        },
       });
     }
 
-    const { id } = newUser;
-    const token = jwt.sign(
-      { id: id, username },
-      process.env.JWT_SECRET
-    );
-
-    res.send({
-      message: "You have successfully registered!",
-      token: token,
-      user: {
-        id: id,
-        username: username,
-      },
-    });
   } catch (error) {
     next(error);
   }
@@ -63,8 +62,6 @@ UserRouter.post("/register", async (req, res, next) => {
 UserRouter.post("/login", async(req, res, next) => {
   const {username, password} = req.body;
 
-
-  
   if (!username || !password) {
     next({
       name: "Missing Credentials Error",
@@ -76,7 +73,6 @@ UserRouter.post("/login", async(req, res, next) => {
     const user = await getUser({username, password});
     
     if (username == username) {
-  
       const token = jwt.sign(
         { id: user.id, username: user.username },
         process.env.JWT_SECRET
@@ -88,7 +84,6 @@ UserRouter.post("/login", async(req, res, next) => {
         user: user,
     })
     } else {
-
       next ({
         name: "Incorrect Credetials Error",
         message: "Username or password is incorrect"
@@ -103,24 +98,11 @@ UserRouter.post("/login", async(req, res, next) => {
 
 // GET /api/users/me
 
-UserRouter.get('/me', async (req, res, next) => {
+UserRouter.get('/me', tokenAuth, async (req, res, next) => {
 
-  const token = req.header('Authorization')
-  
-  
-try {
-  
-
-  if (!token) {
-    res.status(401).send({
-      message: UnauthorizedError(),
-      error: 'No token found',
-      name: 'name'
-    })
-  }
-
-  const headerToken = req.header('Authorization').slice(7);
-  const userInfo = jwt.verify(headerToken, process.env.JWT_SECRET)
+ try{
+  const userInfo = sliceToken(req);
+ 
   const user = await getUserByUsername(userInfo.username)
 
   if (user) {
@@ -130,8 +112,7 @@ try {
     });
   }
   else {
-      res.send('User unavailable');
-    
+      res.send('User unavailable');   
   }
 } catch (error) {
   next(error);
@@ -140,13 +121,11 @@ try {
 })
 
 // GET /api/users/:username/routines
-UserRouter.get('/:username/routines', async (req, res, next) => {
-  const token = req.header("Authorization");
-  const headerToken = token.slice(7);
-  const { username } = req.params;
-  
+UserRouter.get('/:username/routines', tokenAuth, async (req, res, next) => {
   try {
-    const userInfo = jwt.verify(headerToken, process.env.JWT_SECRET);
+    const { username } = req.params;
+    const userInfo = sliceToken(req);
+
     if(username === userInfo.username){
       const  routines = await getAllRoutinesByUser({username});
 

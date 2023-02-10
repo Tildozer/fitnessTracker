@@ -84,27 +84,27 @@ router.patch("/:id", async (req, res, next) => {
   try {
     if (req.body.name) {
       const activityName = await getActivityByName(req.body.name);
-
       if (activityName) {
-        res.status(401).send({
+        next({
           error: "you shall not edit",
           name: "Unable to edit",
           message: ActivityExistsError(req.body.name),
+          status: 401
         });
       }
     }
 
     const activity = await updateActivity({ id: req.params.id, ...req.body });
-
     if (!activity) {
-      res.status(404).send({
+      next({
         error: "you shall not edit",
         name: "Unable to edit",
         message: ActivityNotFoundError(req.params.id),
+        status: 404
       });
+    } else {
+      res.send(activity);
     }
-
-    res.send(activity);
   } catch (error) {
     next(error);
   }
