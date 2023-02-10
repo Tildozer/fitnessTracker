@@ -28,7 +28,9 @@ router.use('/routine_activities', routineActivitiesRouter);
 // eslint-disable-next-line no-unused-vars
 router.use((err, req, res, next) => {
   res.status(err.status || 500)
-  delete err.status
+  if(err.status){
+    delete err.status
+  }
   res.send(err)
 })
 
