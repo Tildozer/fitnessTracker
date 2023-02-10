@@ -1,5 +1,4 @@
 const express = require("express");
-const { response } = require("../app");
 const {
   getAllActivities,
   getPublicRoutinesByActivity,
@@ -7,6 +6,10 @@ const {
   updateActivity,
   getActivityByName,
 } = require("../db");
+const { 
+  ActivityExistsError, 
+  ActivityNotFoundError 
+} = require("../errors");
 const router = express.Router();
 
 // GET /api/activities/:activityId/routines
@@ -22,7 +25,7 @@ router.get("/:activityId/routines", async (req, res, next) => {
     if (!routinesByActivity.length) {
       res.status(400).send({
         error: "Failed to get activities",
-        message: `Activity ${activityId} not found`,
+        message: ActivityNotFoundError(activityId),
         name: "Activity Not Found",
       });
     } else {
@@ -63,7 +66,7 @@ router.post("/", async (req, res, next) => {
       if (!activity) {
         res.status(418).send({
           error: "teapot",
-          message: "An activity with name Push Ups already exists",
+          message: ActivityExistsError(req.body.name),
           name: "more teapots",
         });
       }
@@ -86,7 +89,7 @@ router.patch("/:id", async (req, res, next) => {
         res.send({
           error: "you shall not edit",
           name: "Unable to edit",
-          message: "An activity with name Aerobics already exists",
+          message: ActivityExistsError(req.body.name),
         });
       }
     }
@@ -97,7 +100,7 @@ router.patch("/:id", async (req, res, next) => {
       res.status(404).send({
         error: "you shall not edit",
         name: "Unable to edit",
-        message: "Activity 10000 not found",
+        message: ActivityNotFoundError(req.params.id),
       });
     }
 

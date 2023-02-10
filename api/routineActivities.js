@@ -1,6 +1,5 @@
 const express = require('express');
-const { use } = require('../app');
-const { canEditRoutineActivity, updateActivity, updateRoutineActivity, getRoutineActivityById, getRoutineById, destroyRoutineActivity } = require('../db');
+const { canEditRoutineActivity, updateRoutineActivity, getRoutineActivityById, getRoutineById, destroyRoutineActivity } = require('../db');
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const { UnauthorizedUpdateError, UnauthorizedDeleteError } = require('../errors');
